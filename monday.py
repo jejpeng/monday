@@ -6,12 +6,13 @@ import pandas as pd
 import datetime
 from datetime import date
 import numpy as np
+from smtplib import SMTP
 
 ####### CHANGE THESE VARIABLES AS NEEDED ##########
 maximum = 330 # maximum number of members on your Monday.com plan
 remindMeWhen = 10 # take action when number of members is <remindMeWhen> away from maximum
 timeLimitMonths = 24 # users accounts are changed to viewer if they have not been active in <timeLimitMonths> months
-
+numUsersToRemove = 5
 # then, make a file within the same folder as this file called "config.env",
 # and then set the variable API_KEY to be equal to your Monday.com API key.
 #
@@ -60,11 +61,14 @@ if len(inactiveUsers) > 0:
     queryChangeResults = req2.json()
     #print(queryChangeResults)
 
-if numUsers == maximum:
+if numUsers >= maximum:
     print("") # ideas: - if over by x, change least active x users to view only
     # send email? see if the python script works in power automate 
-elif numUsers == maximum - remindMeWhen:
-    print("")
+    # python script does not, in fact, work - create new gmail account, use power automate to send to outlook?
+elif numUsers >= maximum - remindMeWhen:
+    removalCandidates = resultsDF[(resultsDF['is_view_only'] == False) & (resultsDF['time_since_last_activity'] < timeLimit)].head(numUsersToRemove)['id'].astype('int').tolist()
+    queryChangePermissionsForMore = 'mutation { update_users_role ( user_ids: ' + str(removalCandidates) + ', new_role: VIEW_ONLY ) { updated_users { name id is_view_only } errors { user_id code message } } }'
+
 else:
     print("All good")
 
