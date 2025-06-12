@@ -71,6 +71,7 @@ elif (args.a == 'remove') or (args.a == 'Remove'):
         req2 = requests.post(url = mondayApiUrl, json = data2, headers = headers)
         queryChangeResults = req2.json()
         #print(queryChangeResults)
+        print("Inactive users removed.")
     else:
         print("No inactive users to remove.")
 else:
